@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Statics Calculator Pro</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app-container">
+  <div class="header">
+    <h1>⚙️ Statics Calculator Pro</h1>
+    <p>Engineering Mechanics Solver</p>
+  </div>
+
+  <div class="content">
+    
+    <!-- BEAM SOLVER -->
+    <div id="page-beam" class="page active">
+      <div class="card">
+        <h2>🏗️ Beam Solver</h2>
+        <label>Beam Length (m)</label>
+        <input type="number" id="beamLength" value="6" step="0.1" oninput="drawBeam()">
+
+        <h3>📍 Supports</h3>
+        <div class="row">
+          <div>
+            <label>Type</label>
+            <select id="supportType">
+              <option value="pin">Pin</option>
+              <option value="roller">Roller</option>
+              <option value="fixed">Fixed</option>
+            </select>
+          </div>
+          <div>
+            <label>Position (m)</label>
+            <input type="number" id="supportPos" value="0" step="0.1">
+          </div>
+        </div>
+        <button class="btn-secondary" onclick="addSupport()">+ Add Support</button>
+        <div class="items-list" id="supportList"></div>
+
+        <h3>⬇️ Point Loads</h3>
+        <div class="row">
+          <div><label>Force (N)</label><input type="number" id="ptLoadMag" value="1000" step="100"></div>
+          <div><label>Position (m)</label><input type="number" id="ptLoadPos" value="3" step="0.1"></div>
+        </div>
+        <button class="btn-secondary" onclick="addPointLoad()">+ Add Point Load</button>
+        <div class="items-list" id="pointLoadList"></div>
+
+        <h3>📊 Distributed Load</h3>
+        <div class="row">
+          <div><label>Intensity (N/m)</label><input type="number" id="distLoadW" value="500" step="50"></div>
+          <div></div>
+        </div>
+        <div class="row">
+          <div><label>Start (m)</label><input type="number" id="distLoadStart" value="0" step="0.1"></div>
+          <div><label>End (m)</label><input type="number" id="distLoadEnd" value="6" step="0.1"></div>
+        </div>
+        <button class="btn-secondary" onclick="addDistributedLoad()">+ Add Distributed Load</button>
+        <div class="items-list" id="distLoadList"></div>
+
+        <button class="btn-primary" onclick="solveBeam()">🔍 Solve Beam</button>
+      </div>
+      <div class="card">
+        <h2>📈 Diagrams</h2>
+        <canvas id="beamCanvas"></canvas>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-color" style="background:#dc2626"></div>Load</div>
+          <div class="legend-item"><div class="legend-color" style="background:#16a34a"></div>Reaction</div>
+          <div class="legend-item"><div class="legend-color" style="background:#2563eb"></div>Shear</div>
+          <div class="legend-item"><div class="legend-color" style="background:#7c3aed"></div>Moment</div>
+        </div>
+        <div class="results" id="beamResults"><em>Click "Solve Beam" to see results...</em></div>
+      </div>
+    </div>
+
+    <!-- TRUSS SOLVER -->
+    <div id="page-truss" class="page">
+      <div class="card">
+        <h2> Truss Solver</h2>
+        
+        <h3>📌 Joints</h3>
+        <div class="row">
+          <div><label>X (m)</label><input type="number" id="jointX" value="0" step="0.5"></div>
+          <div><label>Y (m)</label><input type="number" id="jointY" value="0" step="0.5"></div>
+        </div>
+        <label>Support</label>
+        <select id="jointSupport">
+          <option value="none">None</option>
+          <option value="pin">Pin</option>
+          <option value="roller">Roller</option>
+        </select>
+        <button class="btn-secondary" onclick="addJoint()">+ Add Joint</button>
+        <div class="items-list" id="jointList"></div>
+
+        <h3>🔗 Members</h3>
+        <div class="row">
+          <div><label>Joint 1 ID</label><input type="number" id="memJ1" value="0" min="0"></div>
+          <div><label>Joint 2 ID</label><input type="number" id="memJ2" value="1" min="0"></div>
+        </div>
+        <button class="btn-secondary" onclick="addMember()">+ Add Member</button>
+        <div class="items-list" id="memberList"></div>
+
+        <h3>⬇️ External Loads</h3>
+        <div class="row">
+          <div><label>Joint ID</label><input type="number" id="loadJoint" value="0" min="0"></div>
+          <div><label>Magnitude (N)</label><input type="number" id="loadMag" value="1000" step="100"></div>
+        </div>
+        <div class="row">
+          <div><label>Angle (°)</label><input type="number" id="loadAng" value="-90" step="5"></div>
+          <div></div>
+        </div>
+        <button class="btn-secondary" onclick="addLoad()">+ Add Load</button>
+        <div class="items-list" id="loadList"></div>
+
+        <button class="btn-secondary" onclick="loadTrussExample()">📋 Load Example</button>
+        <button class="btn-primary" onclick="solveTruss()">🔍 Solve Truss</button>
+      </div>
+      <div class="card">
+        <h2>📊 Visualization</h2>
+        <canvas id="trussCanvas"></canvas>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-color" style="background:#4ade80"></div>Tension</div>
+          <div class="legend-item"><div class="legend-color" style="background:#f87171"></div>Compression</div>
+          <div class="legend-item"><div class="legend-color" style="background:#94a3b8"></div>Zero</div>
+        </div>
+        <div class="results" id="trussResults"><em>Click "Solve Truss" to see results...</em></div>
+      </div>
+    </div>
+
+    <!-- FRICTION SOLVER -->
+    <div id="page-friction" class="page">
+      <div class="card">
+        <h2> Friction Solver</h2>
+        <label>Problem Type</label>
+        <select id="frictionType" onchange="updateFrictionUI()">
+          <option value="incline">Block on Incline</option>
+          <option value="horizontal">Block on Horizontal</option>
+          <option value="belt">Belt Friction</option>
+        </select>
+        <div id="frictionIncline">
+          <label>Weight W (N)</label>
+          <input type="number" id="fricWeight" value="100" step="10" oninput="drawFriction()">
+          <label>Incline Angle θ (°)</label>
+          <input type="number" id="fricAngle" value="30" step="1" oninput="drawFriction()">
+          <div class="row">
+            <div><label>μs (static)</label><input type="number" id="fricMuS" value="0.4" step="0.05" oninput="drawFriction()"></div>
+            <div><label>μk (kinetic)</label><input type="number" id="fricMuK" value="0.3" step="0.05" oninput="drawFriction()"></div>
+          </div>
+          <label>Applied Force P (N, optional)</label>
+          <input type="number" id="fricApplied" value="0" step="10" oninput="drawFriction()">
+          <label>P Angle from incline (°)</label>
+          <input type="number" id="fricForceAngle" value="0" step="5" oninput="drawFriction()">
+        </div>
+        <div id="frictionBelt" class="hidden">
+          <label>Tension T1 (N)</label>
+          <input type="number" id="beltT1" value="100" step="10" oninput="drawFriction()">
+          <label>Coefficient μ</label>
+          <input type="number" id="beltMu" value="0.3" step="0.05" oninput="drawFriction()">
+          <label>Contact Angle β (°)</label>
+          <input type="number" id="beltAngle" value="180" step="10" oninput="drawFriction()">
+        </div>
+        <button class="btn-primary" onclick="solveFriction()">🔍 Solve Friction</button>
+      </div>
+      <div class="card">
+        <h2>📊 Visualization</h2>
+        <canvas id="frictionCanvas"></canvas>
+        <div class="results" id="frictionResults"><em>Click "Solve Friction" to see results...</em></div>
+      </div>
+    </div>
+
+    <!-- CENTROID -->
+    <div id="page-centroid" class="page">
+      <div class="card">
+        <h2>🎯 Centroid Calculator</h2>
+        <label>Shape Type</label>
+        <select id="centroidShape" onchange="updateCentroidUI()">
+          <option value="rectangle">Rectangle</option>
+          <option value="triangle">Triangle</option>
+          <option value="circle">Circle</option>
+          <option value="semicircle">Semicircle</option>
+          <option value="composite">Composite Shape</option>
+        </select>
+        <div id="rectInputs">
+          <div class="row">
+            <div><label>Width b (m)</label><input type="number" id="rectW" value="4" step="0.1" oninput="drawCentroid()"></div>
+            <div><label>Height h (m)</label><input type="number" id="rectH" value="2" step="0.1" oninput="drawCentroid()"></div>
+          </div>
+        </div>
+        <div id="triInputs" class="hidden">
+          <div class="row">
+            <div><label>Base b (m)</label><input type="number" id="triB" value="3" step="0.1" oninput="drawCentroid()"></div>
+            <div><label>Height h (m)</label><input type="number" id="triH" value="4" step="0.1" oninput="drawCentroid()"></div>
+          </div>
+        </div>
+        <div id="circleInputs" class="hidden">
+          <label>Radius r (m)</label>
+          <input type="number" id="circR" value="2" step="0.1" oninput="drawCentroid()">
+        </div>
+        <div id="semiInputs" class="hidden">
+          <label>Radius r (m)</label>
+          <input type="number" id="semiR" value="2" step="0.1" oninput="drawCentroid()">
+        </div>
+        <div id="compositeSection" class="hidden">
+          <h3>Add Components</h3>
+          <div class="row-3">
+            <div><label>Area (m²)</label><input type="number" id="compArea" value="1" step="0.1"></div>
+            <div><label>x̄ (m)</label><input type="number" id="compX" value="0" step="0.1"></div>
+            <div><label>ȳ (m)</label><input type="number" id="compY" value="0" step="0.1"></div>
+          </div>
+          <button class="btn-secondary" onclick="addComponent()">+ Add Component</button>
+          <div class="items-list" id="componentList"></div>
+        </div>
+        <button class="btn-primary" onclick="solveCentroid()">🔍 Calculate Centroid</button>
+      </div>
+      <div class="card">
+        <h2>📊 Visualization</h2>
+        <canvas id="centroidCanvas"></canvas>
+        <div class="results" id="centroidResults"><em>Click "Calculate Centroid" to see results...</em></div>
+      </div>
+    </div>
+
+    <!-- CABLE & PULLEY -->
+    <div id="page-cable" class="page">
+      <div class="card">
+        <h2>🪢 Cable & Pulley</h2>
+        <label>System Type</label>
+        <select id="cableType" onchange="updateCableUI()">
+          <option value="single">Single Fixed Pulley</option>
+          <option value="movable">Movable Pulley</option>
+          <option value="compound">Compound System</option>
+          <option value="catenary">Catenary Cable</option>
+        </select>
+        <div id="cableSingle">
+          <label>Load Weight W (N)</label>
+          <input type="number" id="cableLoad" value="500" step="50" oninput="drawCable()">
+          <label>Pull Angle (°)</label>
+          <input type="number" id="cableAngle" value="90" step="5" oninput="drawCable()">
+        </div>
+        <div id="cableMovable" class="hidden">
+          <label>Load Weight W (N)</label>
+          <input type="number" id="movableLoad" value="500" step="50" oninput="drawCable()">
+        </div>
+        <div id="cableCompound" class="hidden">
+          <label>Load Weight W (N)</label>
+          <input type="number" id="compoundLoad" value="1000" step="100" oninput="drawCable()">
+          <label>Number of Pulleys</label>
+          <input type="number" id="compoundPulleys" value="3" min="1" max="6" oninput="drawCable()">
+        </div>
+        <div id="cableCatenary" class="hidden">
+          <label>Cable Weight w (N/m)</label>
+          <input type="number" id="catenaryW" value="10" step="1" oninput="drawCable()">
+          <label>Span Length L (m)</label>
+          <input type="number" id="catenaryL" value="20" step="1" oninput="drawCable()">
+          <label>Sag d (m)</label>
+          <input type="number" id="catenarySag" value="2" step="0.1" oninput="drawCable()">
+        </div>
+        <button class="btn-primary" onclick="solveCable()"> Solve System</button>
+      </div>
+      <div class="card">
+        <h2>📊 Visualization</h2>
+        <canvas id="cableCanvas"></canvas>
+        <div class="results" id="cableResults"><em>Click "Solve System" to see results...</em></div>
+      </div>
+    </div>
+
+    <!-- DISTRIBUTED LOAD -->
+    <div id="page-distributed" class="page">
+      <div class="card">
+        <h2>📊 Distributed Load</h2>
+        <label>Load Type</label>
+        <select id="distType" onchange="updateDistUI()">
+          <option value="uniform">Uniform (UDL)</option>
+          <option value="triangular">Triangular</option>
+          <option value="trapezoidal">Trapezoidal</option>
+        </select>
+        <div id="distUniform">
+          <label>Load Intensity w (N/m)</label>
+          <input type="number" id="udlW" value="500" step="50" oninput="drawDistributed()">
+          <label>Length L (m)</label>
+          <input type="number" id="udlL" value="6" step="0.1" oninput="drawDistributed()">
+        </div>
+        <div id="distTriangular" class="hidden">
+          <label>Max Intensity w (N/m)</label>
+          <input type="number" id="triW" value="800" step="50" oninput="drawDistributed()">
+          <label>Length L (m)</label>
+          <input type="number" id="triL" value="6" step="0.1" oninput="drawDistributed()">
+        </div>
+        <div id="distTrapezoidal" class="hidden">
+          <div class="row">
+            <div><label>w₁ (N/m)</label><input type="number" id="trapW1" value="300" step="50" oninput="drawDistributed()"></div>
+            <div><label>w₂ (N/m)</label><input type="number" id="trapW2" value="700" step="50" oninput="drawDistributed()"></div>
+          </div>
+          <label>Length L (m)</label>
+          <input type="number" id="trapL" value="6" step="0.1" oninput="drawDistributed()">
+        </div>
+        <button class="btn-primary" onclick="solveDistributed()">🔍 Calculate Equivalent</button>
+      </div>
+      <div class="card">
+        <h2>📊 Visualization</h2>
+        <canvas id="distributedCanvas"></canvas>
+        <div class="results" id="distributedResults"><em>Click "Calculate" to see results...</em></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation with Improved Icons -->
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="switchPage('beam', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17h18M5 17V7h14v10M8 7V4h8v3M3 20h18"/></svg></span>
+      <span class="nav-label">Beam</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('truss', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19 12 5l9 14H3ZM7.5 19 12 12l4.5 7M5.8 14h12.4"/></svg></span>
+      <span class="nav-label">Truss</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('friction', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18h14M7 15h10l-2-7H9l-2 7ZM4 18l3-3M20 18l-3-3M8 6l-2-2M16 6l2-2"/></svg></span>
+      <span class="nav-label">Friction</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('centroid', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></span>
+      <span class="nav-label">Centroid</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('cable', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5"/><path d="M7 9H3v11h4M17 9h4v11h-4M8 20h8M9 6c1.5-2 4.5-2 6 0"/></svg></span>
+      <span class="nav-label">Pulley</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('distributed', this)">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16M5 17l2-8 2 8 2-8 2 8 2-8 2 8"/><path d="M7 5v4M12 5v4M17 5v4M5 7h14"/></svg></span>
+      <span class="nav-label">Dist.Load</span>
+    </button>
+  </div>
+</div>
+  <script src="js/app.js"></script>
+</body>
+</html>
